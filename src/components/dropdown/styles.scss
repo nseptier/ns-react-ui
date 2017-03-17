@@ -1,0 +1,16 @@
+@import "colors";
+
+.ns-dropdown {
+  background: $background-color--dialog;
+  border-radius: 2px;
+  box-shadow:
+    0 2px 2px 0 rgba($black,.2),
+    0 6px 10px 0 rgba($black,.3);
+  box-sizing: border-box;
+  color: $text-color;
+  min-width: 128px;
+  overflow: hidden;
+  position: absolute;
+  text-align: left;
+  z-index: 8;
+}

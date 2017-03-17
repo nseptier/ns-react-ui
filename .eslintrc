@@ -1,0 +1,50 @@
+{
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "extends": "airbnb",
+  "globals": {
+    "API_URL": true,
+    "AUTH_URL": true
+  },
+  "parser": "babel-eslint",
+  "rules": {
+    "jsx-a11y/anchor-is-valid": [
+      "error",
+      {
+        "components": ["Link"],
+        "specialLink": ["to"]
+      }
+    ],
+    "no-mixed-operators": [
+      "error",
+      { "allowSamePrecedence": true }
+    ],
+    "object-curly-newline": [
+      "error",
+      { "consistent": true }
+    ],
+    "react/prop-types": [
+      "error",
+      {
+        "ignore": [
+          "children",
+          "className",
+          "dispatch",
+          "match",
+          "style"
+        ],
+        "customValidators": [],
+        "skipUndeclared": false
+      }
+    ]
+  },
+  "settings": {
+    "import/resolver": {
+      "webpack": {
+        "config": "webpack.config.babel.js"
+      }
+    }
+  }
+}
