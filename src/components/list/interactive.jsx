@@ -110,10 +110,14 @@ export default class InteractiveList extends Component {
 
   @autobind
   onItemSelection(event) {
-    const { onItemSelection, source } = this.props;
+    const { itemDisabler, onItemSelection, source } = this.props;
     const { hoveredItem } = this.state;
 
-    if (!hoveredItem || !source.includes(hoveredItem)) return;
+    if (!hoveredItem
+      || !source.includes(hoveredItem)
+      || itemDisabler(hoveredItem)) {
+      return;
+    }
     onItemSelection(hoveredItem, event);
   }
 
@@ -198,6 +202,7 @@ export default class InteractiveList extends Component {
       = this.props;
     const { hoveredItem } = this.state;
     const renderedItem = itemRenderer(item);
+    const disabled = itemDisabler(item);
 
     return cloneElement(
       renderedItem,
@@ -210,8 +215,8 @@ export default class InteractiveList extends Component {
         'data-active': item.equals(activeItem),
         'data-hover': item.equals(hoveredItem),
         'data-menuitem': true,
-        disabled: itemDisabler(item),
-        onClick: event => onItemSelection(item, event),
+        disabled,
+        onClick: event => disabled || onItemSelection(item, event),
         onMouseEnter: () => this.setState({ hoveredItem: item }),
         tabIndex: -1,
       },
