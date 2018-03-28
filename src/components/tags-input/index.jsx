@@ -190,18 +190,20 @@ export default class TagsInput extends Component {
   }
 
   renderTags() {
-    const { tagRenderer, value } = this.props;
+    const { disabled, tagRenderer, value } = this.props;
 
     return value.map(string => (
       <div className="tag tags-input__tag" key={btoa(string)}>
         {tagRenderer(string)}
-        <button
-          className="tag__icon"
-          onClick={() => this.onTagRemoval(string)}
-          tabIndex="-1"
-        >
-          <Icon name="close" />
-        </button>
+        {!disabled &&
+          <button
+            className="tag__icon"
+            onClick={() => this.onTagRemoval(string)}
+            tabIndex="-1"
+          >
+            <Icon name="close" />
+          </button>
+        }
       </div>
     ));
   }
