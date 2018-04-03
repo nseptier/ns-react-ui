@@ -4,11 +4,14 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import './styles.scss';
 
-const list = ({ className, itemRenderer, source, style }) => (
+const list = ({ className, itemIdentifier, itemRenderer, source, style }) => (
   <div className={classNames('ns-list', className)} style={style}>
     <ul className="ns-list__items">
-      {source.map(item => (
-        <li className="ns-list__item" key={btoa(item)}>
+      {source.map((item, index) => (
+        <li
+          className="ns-list__item"
+          key={item.get('id') || itemIdentifier(item) || index}
+        >
           {itemRenderer(item)}
         </li>
       ))}
@@ -16,7 +19,12 @@ const list = ({ className, itemRenderer, source, style }) => (
   </div>
 );
 
+list.defaultProps = {
+  itemIdentifier: () => null,
+};
+
 list.propTypes = {
+  itemIdentifier: PropTypes.func,
   itemRenderer: PropTypes.func.isRequired,
   source: PropTypes.instanceOf(Immutable.List).isRequired,
 };

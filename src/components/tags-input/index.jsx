@@ -193,7 +193,7 @@ export default class TagsInput extends Component {
     const { disabled, tagRenderer, value } = this.props;
 
     return value.map(string => (
-      <div className="tag tags-input__tag" key={btoa(string)}>
+      <div className="tag tags-input__tag" key={string}>
         {tagRenderer(string)}
         {!disabled &&
           <button
