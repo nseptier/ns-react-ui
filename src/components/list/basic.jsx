@@ -4,15 +4,15 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import './styles.scss';
 
-const list = ({ className, itemIdentifier, itemRenderer, source, style }) => (
+const list = ({ className, itemRenderer, source, style }) => (
   <div className={classNames('ns-list', className)} style={style}>
     <ul className="ns-list__items">
       {source.map((item, index) => (
         <li
           className="ns-list__item"
-          key={item.get('id') || itemIdentifier(item) || index}
+          key={itemRenderer ? (item.get('id') || index) : item}
         >
-          {itemRenderer(item)}
+          {itemRenderer ? itemRenderer(item) : item}
         </li>
       ))}
     </ul>
@@ -20,12 +20,11 @@ const list = ({ className, itemIdentifier, itemRenderer, source, style }) => (
 );
 
 list.defaultProps = {
-  itemIdentifier: () => null,
+  itemRenderer: null,
 };
 
 list.propTypes = {
-  itemIdentifier: PropTypes.func,
-  itemRenderer: PropTypes.func.isRequired,
+  itemRenderer: PropTypes.func,
   source: PropTypes.instanceOf(Immutable.List).isRequired,
 };
 

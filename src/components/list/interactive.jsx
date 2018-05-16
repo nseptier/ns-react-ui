@@ -15,6 +15,7 @@ export default class InteractiveList extends Component {
     focusTarget: null,
     hoveredItem: null,
     itemDisabler: () => null,
+    itemRenderer: () => null,
     onItemHover: () => null,
     onItemSelection: () => null,
     selectionKeys: [13],
@@ -25,7 +26,7 @@ export default class InteractiveList extends Component {
     focusTarget: PropTypes.string,
     hoveredItem: PropTypes.node,
     itemDisabler: PropTypes.func,
-    itemRenderer: PropTypes.func.isRequired,
+    itemRenderer: PropTypes.func,
     onItemHover: PropTypes.func,
     onItemSelection: PropTypes.func,
     selectionKeys: PropTypes.arrayOf(PropTypes.number),
@@ -201,7 +202,7 @@ export default class InteractiveList extends Component {
     const { activeItem, itemDisabler, itemRenderer, onItemSelection }
       = this.props;
     const { hoveredItem } = this.state;
-    const renderedItem = itemRenderer(item);
+    const renderedItem = itemRenderer ? itemRenderer(item) : item;
     const isDisabled = !!itemDisabler(item);
 
     return cloneElement(
