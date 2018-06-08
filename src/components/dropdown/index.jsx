@@ -1,82 +1,12 @@
 import autobind from 'autobind-decorator';
 import classNames from 'utils/classnames';
-import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import { bool, func, string } from 'prop-types';
+import Proxy from './proxy';
 import './styles.scss';
 
-const proxy = DecoratedComponent => class DropdownProxy extends Component {
-  // static --------------------------------------------------------------------
-
-  static defaultProps = {
-    align: 'top left',
-    anchor: 'bottom left',
-    isExpanded: null,
-  }
-
-  static propTypes = {
-    align: PropTypes.string,
-    anchor: PropTypes.string,
-    isExpanded: PropTypes.bool,
-    triggerId: PropTypes.string.isRequired,
-  }
-
-  // lifecycle -----------------------------------------------------------------
-
-  constructor(props, context) {
-    super(props, context);
-    this.state = { bottom: null, left: null, right: null, top: null };
-  }
-
-  componentDidMount() {
-    this.triggerNode = document.getElementById(this.props.triggerId);
-    if (this.props.isExpanded) this.setPosition();
-  }
-
-  componentDidUpdate(prevProps) {
-    /* a second render is necessary once the DOM has been updated to be able to
-       use the nodes' dimensions and position */
-    if (!prevProps.isExpanded && this.props.isExpanded) this.setPosition();
-  }
-
-  // getters -------------------------------------------------------------------
-
-  setPosition() {
-    const { align, anchor } = this.props;
-    const [yAlign, xAlign] = align.split(' ');
-    const [yAnchor, xAnchor] = anchor.split(' ');
-    const trigger = this.triggerNode.getBoundingClientRect();
-    const viewport = {
-      bottom: document.documentElement.clientHeight,
-      left: 0,
-      right: document.documentElement.clientWidth,
-      top: 0,
-    };
-
-    this.setState({
-      [xAlign]: `${Math.abs(viewport[xAlign] - trigger[xAnchor])}px`,
-      [yAlign]: `${Math.abs(viewport[yAlign] - trigger[yAnchor])}px`,
-    });
-  }
-
-  // rendering -----------------------------------------------------------------
-
-  render() {
-    const { style, ...props } = this.props;
-    const { bottom, left, right, top } = this.state;
-
-    return (bottom === null && top === null) || (left === null && right === null)
-      ? null
-      : (
-        <DecoratedComponent
-          {...props}
-          style={{ ...style, bottom, left, right, top }}
-        />
-      );
-  }
-};
-
-@proxy // eslint-disable-line react/no-multi-comp
+@Proxy
 export default class Dropdown extends Component {
   // static --------------------------------------------------------------------
 
@@ -85,9 +15,9 @@ export default class Dropdown extends Component {
   }
 
   static propTypes = {
-    isExpanded: PropTypes.bool,
-    onClose: PropTypes.func.isRequired,
-    triggerId: PropTypes.string.isRequired,
+    isExpanded: bool,
+    onClose: func.isRequired,
+    triggerId: string.isRequired,
   }
 
   // lifecycle -----------------------------------------------------------------
