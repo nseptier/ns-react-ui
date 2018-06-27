@@ -3,9 +3,26 @@ import classNames from 'utils/classnames';
 import Immutable from 'immutable';
 import List from 'components/list';
 import modulo from 'utils/modulo';
-import PropTypes from 'prop-types';
 import React, { cloneElement, Component } from 'react';
+import sortByFn from 'utils/immutable/sort-by';
+import {
+  arrayOf, bool, func, instanceOf, number, shape, string,
+} from 'prop-types';
 import './styles.scss';
+
+const sortSource = ({ groupBy, sortBy, source }) => {
+  let sortedSource = source;
+
+  if (sortBy) {
+    const { key, nullFirst, order } = sortBy;
+    sortedSource = sortedSource.sort(sortByFn(key, { nullFirst, order }));
+  }
+  if (groupBy) {
+    sortedSource = sortedSource.sort(sortByFn(groupBy, { nullFirst: true }));
+  }
+
+  return sortedSource;
+};
 
 export default class InteractiveList extends Component {
   // static --------------------------------------------------------------------
@@ -13,23 +30,33 @@ export default class InteractiveList extends Component {
   static defaultProps = {
     activeItem: null,
     focusTarget: null,
+    groupBy: undefined,
+    groupHeaderRenderer: undefined,
     hoveredItem: null,
     itemDisabler: () => null,
     onItemHover: () => null,
     onItemSelection: () => null,
     selectionKeys: [13],
+    sortBy: null,
   }
 
   static propTypes = {
-    activeItem: PropTypes.node,
-    focusTarget: PropTypes.string,
-    hoveredItem: PropTypes.node,
-    itemDisabler: PropTypes.func,
-    itemRenderer: PropTypes.func.isRequired,
-    onItemHover: PropTypes.func,
-    onItemSelection: PropTypes.func,
-    selectionKeys: PropTypes.arrayOf(PropTypes.number),
-    source: PropTypes.instanceOf(Immutable.List).isRequired,
+    activeItem: instanceOf(Immutable.Map),
+    focusTarget: string,
+    groupBy: string,
+    groupHeaderRenderer: func,
+    hoveredItem: instanceOf(Immutable.Map),
+    itemDisabler: func,
+    itemRenderer: func.isRequired,
+    onItemHover: func,
+    onItemSelection: func,
+    selectionKeys: arrayOf(number),
+    sortBy: shape({
+      key: string.isRequired,
+      nullFirst: bool,
+      order: string,
+    }),
+    source: instanceOf(Immutable.List).isRequired,
   }
 
   // lifecycle -----------------------------------------------------------------
@@ -41,6 +68,7 @@ export default class InteractiveList extends Component {
     super(props, context);
     this.state = {
       hoveredItem: source.includes(item) ? item : source.first(),
+      sortedSource: sortSource(props),
     };
   }
 
@@ -66,10 +94,13 @@ export default class InteractiveList extends Component {
     }
 
     if (!source.equals(nextProps.source)) {
+      const sortedSource = sortSource(nextProps);
+
       this.setState({
         hoveredItem: nextProps.source.includes(this.state.hoveredItem)
           ? this.state.hoveredItem
-          : nextProps.source.first(),
+          : sortedSource.first(),
+        sortedSource,
       });
     }
   }
@@ -80,7 +111,7 @@ export default class InteractiveList extends Component {
     if (!source.equals(prevProps.source)) {
       const option = source.includes(this.state.hoveredItem)
         ? this.state.hoveredItem
-        : source.first();
+        : this.state.sortedSource.first();
 
       this.focusItem(option);
     }
@@ -148,19 +179,19 @@ export default class InteractiveList extends Component {
   // utils ---------------------------------------------------------------------
 
   focusAdjacentItem(direction) {
-    const { source } = this.props;
+    const { sortedSource } = this.state;
     const adjacentIndex = modulo(
-      source.indexOf(this.state.hoveredItem) + direction,
-      source.size,
+      sortedSource.indexOf(this.state.hoveredItem) + direction,
+      sortedSource.size,
     );
-    const hoveredItem = source.get(adjacentIndex);
+    const hoveredItem = sortedSource.get(adjacentIndex);
 
     this.setState({ hoveredItem });
     this.focusItem(hoveredItem);
   }
 
   focusItem(item, shouldCenter) {
-    const index = this.props.source.indexOf(item);
+    const index = this.state.sortedSource.indexOf(item);
     const node = this.listNode.querySelectorAll('[data-menuitem]')[index];
 
     /* this could be a simple matter of calling `node.focus()`, but the list's
@@ -224,7 +255,9 @@ export default class InteractiveList extends Component {
   }
 
   render() {
-    const { className, source, style } = this.props;
+    const {
+      className, groupBy, groupHeaderRenderer, source, sortBy, style,
+    } = this.props;
 
     return (
       <div
@@ -233,7 +266,10 @@ export default class InteractiveList extends Component {
         style={style}
       >
         <List
+          groupBy={groupBy}
+          groupHeaderRenderer={groupHeaderRenderer}
           itemRenderer={item => this.renderItem(item)}
+          sortBy={sortBy}
           source={source}
         />
       </div>

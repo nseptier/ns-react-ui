@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import './styles.scss';
 
-const importAll = r => r.keys().map(r);
-importAll(require.context('../../../images/icons/', false, /\.svg$/));
+// const importAll = r => r.keys().map(r);
+// importAll(require.context('../../../images/icons/', false, /\.svg$/));
 
 const icon = ({ className, name, style }) => (
   <svg className={classNames('ns-icon', className)} style={style}>
