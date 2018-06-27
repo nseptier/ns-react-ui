@@ -8,29 +8,15 @@ import './styles.scss';
 const list = ({
   className, groupBy, groupHeaderRenderer, itemIdentifier, itemRenderer, sortBy,
   source, style,
-}) => {
-  const groups = source.reduce(
-    /* eslint-disable no-param-reassign */
-    (accumulator, item) => {
-      const groupName = (groupBy && item.get(groupBy)) || '';
-
-      if (!accumulator[groupName]) accumulator[groupName] = [];
-      accumulator[groupName].push(item);
-      if (sortBy) {
-        const { key, nullFirst, order } = sortBy;
-        accumulator[groupName].sort(sortByFn(key, { nullFirst, order }));
-      }
-      return accumulator;
-    },
-    /* eslint-enable */
-    {},
-  );
-  const groupsNames = Object.keys(groups)
-    .sort((a, b) => (b === '') - (a === '') || +(a > b) || -(a < b));
-
-  return (
-    <div className={classNames('ns-list', className)} style={style}>
-      {groupsNames.map(name => (
+}) => (
+  <div className={classNames('ns-list', className)} style={style}>
+    {source
+      .groupBy(item => item.get(groupBy))
+      .sort((a, b) => (b === '') - (a === '') || +(a > b) || -(a < b))
+      .map((group, name) => (
+        /* eslint-disable react/no-array-index-key */
+        /* We are looping through an Immutable Map so those are names, rather
+           than indexes, so keys will stay consistent. */
         <div className="ns-list__group" key={name}>
           {!!groupHeaderRenderer &&
             <header className="ns-list__header">
@@ -38,20 +24,24 @@ const list = ({
             </header>
           }
           <ul className="ns-list__items">
-            {groups[name].map((item, index) => (
-              <li
-                className="ns-list__item"
-                key={item.get('id') || itemIdentifier(item) || index}
-              >
-                {itemRenderer(item)}
-              </li>
-            ))}
+            {group
+              .sortBy(sortBy ? sortByFn(sortBy) : undefined)
+              .map((item, index) => (
+                <li
+                  className="ns-list__item"
+                  key={item.get('id') || itemIdentifier(item) || index}
+                >
+                  {itemRenderer(item)}
+                </li>
+              ))
+            }
           </ul>
         </div>
-      ))}
-    </div>
-  );
-};
+        /* eslint-enable */
+      ))
+    }
+  </div>
+);
 
 list.defaultProps = {
   groupBy: null,
@@ -64,7 +54,7 @@ list.propTypes = {
   groupBy: string,
   groupHeaderRenderer: func,
   itemIdentifier: func,
-  itemRenderer: func.isRequired,
+  itemRenderer: func.isRequired, // eslint-disable-line react/no-typos
   source: instanceOf(Immutable.Iterable).isRequired,
   sortBy: shape({
     key: string.isRequired,
