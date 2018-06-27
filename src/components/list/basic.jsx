@@ -65,7 +65,7 @@ list.propTypes = {
   groupHeaderRenderer: func,
   itemIdentifier: func,
   itemRenderer: func.isRequired,
-  source: instanceOf(Immutable.List).isRequired,
+  source: instanceOf(Immutable.Iterable).isRequired,
   sortBy: shape({
     key: string.isRequired,
     nullFirst: bool,

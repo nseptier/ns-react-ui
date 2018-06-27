@@ -21,14 +21,14 @@ const sortSource = ({ groupBy, sortBy, source }) => {
     sortedSource = sortedSource.sort(sortByFn(groupBy, { nullFirst: true }));
   }
 
-  return sortedSource;
+  return sortedSource.toList();
 };
 
 export default class InteractiveList extends Component {
   // static --------------------------------------------------------------------
 
   static defaultProps = {
-    activeItem: null,
+    activeItems: null,
     focusTarget: null,
     groupBy: undefined,
     groupHeaderRenderer: undefined,
@@ -41,7 +41,7 @@ export default class InteractiveList extends Component {
   }
 
   static propTypes = {
-    activeItem: instanceOf(Immutable.Map),
+    activeItems: instanceOf(Immutable.Iterable),
     focusTarget: string,
     groupBy: string,
     groupHeaderRenderer: func,
@@ -56,14 +56,14 @@ export default class InteractiveList extends Component {
       nullFirst: bool,
       order: string,
     }),
-    source: instanceOf(Immutable.List).isRequired,
+    source: instanceOf(Immutable.Iterable).isRequired,
   }
 
   // lifecycle -----------------------------------------------------------------
 
   constructor(props, context) {
-    const { activeItem, hoveredItem, source } = props;
-    const item = hoveredItem || activeItem;
+    const { activeItems, hoveredItem, source } = props;
+    const item = hoveredItem || activeItems.first();
 
     super(props, context);
     this.state = {
@@ -229,8 +229,9 @@ export default class InteractiveList extends Component {
   // render --------------------------------------------------------------------
 
   renderItem(item) {
-    const { activeItem, itemDisabler, itemRenderer, onItemSelection }
-      = this.props;
+    const {
+      activeItems, itemDisabler, itemRenderer, onItemSelection,
+    } = this.props;
     const { hoveredItem } = this.state;
     const renderedItem = itemRenderer(item);
     const isDisabled = !!itemDisabler(item);
@@ -243,7 +244,7 @@ export default class InteractiveList extends Component {
           'ns-list--interactive__item',
           renderedItem.props.className,
         ),
-        'data-active': item.equals(activeItem),
+        'data-active': activeItems.includes(item),
         'data-hover': item.equals(hoveredItem),
         'data-menuitem': true,
         disabled: isDisabled,
