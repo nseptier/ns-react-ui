@@ -13,7 +13,8 @@ const list = ({
     {source
       .groupBy(item => item.get(groupBy))
       .sort((a, b) => (b === '') - (a === '') || +(a > b) || -(a < b))
-      .map((group, name) => (
+      .entrySeq()
+      .map(([name, group]) => (
         /* eslint-disable react/no-array-index-key */
         /* We are looping through an Immutable Map so those are names, rather
            than indexes, so keys will stay consistent. */
@@ -25,7 +26,7 @@ const list = ({
           }
           <ul className="ns-list__items">
             {group
-              .sortBy(sortBy ? sortByFn(sortBy) : undefined)
+              .sortBy(sortBy ? sortByFn(sortBy) : () => 0)
               .map((item, index) => (
                 <li
                   className="ns-list__item"
