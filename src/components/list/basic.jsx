@@ -26,7 +26,7 @@ const list = ({
           }
           <ul className="ns-list__items">
             {group
-              .sortBy(sortBy ? sortByFn(sortBy) : () => 0)
+              .sortBy(sortBy ? sortByFn(sortBy.key, sortBy) : () => 0)
               .map((item, index) => (
                 <li
                   className="ns-list__item"
