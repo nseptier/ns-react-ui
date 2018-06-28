@@ -63,12 +63,13 @@ export default class InteractiveList extends Component {
 
   constructor(props, context) {
     const { activeItems, hoveredItem, source } = props;
-    const item = hoveredItem || activeItems.first();
+    const sortedSource = sortSource(props);
+    const item = hoveredItem || sortedSource.find(i => activeItems.includes(i));
 
     super(props, context);
     this.state = {
-      hoveredItem: source.includes(item) ? item : source.first(),
-      sortedSource: sortSource(props),
+      hoveredItem: source.includes(item) ? item : sortedSource.first(),
+      sortedSource,
     };
   }
 
@@ -221,7 +222,9 @@ export default class InteractiveList extends Component {
         this.listNode.scrollTop = item.bottom - dropdown.height;
       }
       if (item.top < dropdown.scroll) {
-        this.listNode.scrollTop = item.top;
+        this.listNode.scrollTop = item.bottom >= dropdown.scroll
+          ? item.top
+          : item.bottom - dropdown.height;
       }
     }
   }
@@ -262,7 +265,7 @@ export default class InteractiveList extends Component {
 
     return (
       <div
-        className={classNames('interactive-list', className)}
+        className={classNames('ns-list--interactive', className)}
         ref={(node) => { this.listNode = node; }}
         style={style}
       >

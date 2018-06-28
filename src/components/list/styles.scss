@@ -1,5 +1,9 @@
 @import "colors";
 
+.ns-list--interactive {
+  position: relative;
+}
+
 .ns-list--interactive__item {
   cursor: pointer;
 
