@@ -8,41 +8,39 @@ import './styles.scss';
 const list = ({
   className, groupBy, groupHeaderRenderer, itemIdentifier, itemRenderer, sortBy,
   source, style,
-}) => (
-  <div className={classNames('ns-list', className)} style={style}>
-    {source
-      .groupBy(item => item.get(groupBy))
-      .sort((a, b) => (b === '') - (a === '') || +(a > b) || -(a < b))
-      .entrySeq()
-      .map(([name, group]) => (
-        /* eslint-disable react/no-array-index-key */
-        /* We are looping through an Immutable Map so those are names, rather
-           than indexes, so keys will stay consistent. */
-        <div className="ns-list__group" key={name}>
-          {!!groupHeaderRenderer &&
-            <header className="ns-list__header">
-              {groupHeaderRenderer(name)}
-            </header>
-          }
-          <ul className="ns-list__items">
-            {group
-              .sort(sortBy ? sortByFn(sortBy.key, sortBy) : () => 0)
-              .map((item, index) => (
-                <li
-                  className="ns-list__item"
-                  key={item.get('id') || itemIdentifier(item) || index}
-                >
-                  {itemRenderer(item)}
-                </li>
-              ))
+}) => {
+  const groups = source.groupBy(item => item.get(groupBy));
+
+  return (
+    <div className={classNames('ns-list', className)} style={style}>
+      {groups.keySeq()
+        .sort((a, b) => (b === null) - (a === null) || +(a > b) || -(a < b))
+        .map(name => (
+          <div className="ns-list__group" key={name}>
+            {!!groupHeaderRenderer &&
+              <header className="ns-list__header">
+                {groupHeaderRenderer(name)}
+              </header>
             }
-          </ul>
-        </div>
-        /* eslint-enable */
-      ))
-    }
-  </div>
-);
+            <ul className="ns-list__items">
+              {groups.get(name)
+                .sort(sortBy ? sortByFn(sortBy.key, sortBy) : () => 0)
+                .map((item, index) => (
+                  <li
+                    className="ns-list__item"
+                    key={item.get('id') || itemIdentifier(item) || index}
+                  >
+                    {itemRenderer(item)}
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+  );
+};
 
 list.defaultProps = {
   groupBy: null,
