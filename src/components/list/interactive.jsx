@@ -1,5 +1,6 @@
 import autobind from 'autobind-decorator';
 import classNames from 'utils/classnames';
+import debounce from 'utils/debounce';
 import Immutable from 'immutable';
 import List from 'components/list';
 import modulo from 'utils/modulo';
@@ -81,7 +82,7 @@ export default class InteractiveList extends Component {
       document.getElementById(focusTarget)
         .addEventListener('keydown', this.onKeyDown);
     }
-    this.focusItem(hoveredItem, true);
+    this.scrollToItem(hoveredItem, true);
     onItemHover(hoveredItem);
   }
 
@@ -110,14 +111,15 @@ export default class InteractiveList extends Component {
     const { hoveredItem, onItemHover, source } = this.props;
 
     if (!source.equals(prevProps.source)) {
-      const option = source.includes(this.state.hoveredItem)
+      const item = source.includes(this.state.hoveredItem)
         ? this.state.hoveredItem
         : this.state.sortedSource.first();
 
-      this.focusItem(option);
+      this.scrollToItem(item);
     }
 
-    if (this.state.hoveredItem !== prevState.hoveredItem) {
+    if (!this.state.hoveredItem.equals(prevState.hoveredItem)) {
+      this.debounceHoveredItem = null;
       onItemHover(this.state.hoveredItem);
     }
 
@@ -125,7 +127,7 @@ export default class InteractiveList extends Component {
       && hoveredItem.equals(this.state.hoveredItem)
       && this.state.hoveredItem
       && !this.state.hoveredItem.equals(prevState.hoveredItem)) {
-      this.focusItem(hoveredItem);
+      this.scrollToItem(hoveredItem);
     }
   }
 
@@ -179,52 +181,57 @@ export default class InteractiveList extends Component {
 
   // utils ---------------------------------------------------------------------
 
+  debounceItemHover = debounce(
+    (hoveredItem) => {
+      this.setState({ hoveredItem });
+      this.scrollToItem(hoveredItem);
+    },
+    1,
+  )
+
   focusAdjacentItem(direction) {
     const { sortedSource } = this.state;
     const adjacentIndex = modulo(
-      sortedSource.indexOf(this.state.hoveredItem) + direction,
+      sortedSource.indexOf(this.debounceHoveredItem || this.state.hoveredItem)
+        + direction,
       sortedSource.size,
     );
     const hoveredItem = sortedSource.get(adjacentIndex);
 
-    this.setState({ hoveredItem });
-    this.focusItem(hoveredItem);
+    this.debounceHoveredItem = hoveredItem;
+    this.debounceItemHover(hoveredItem);
   }
 
-  focusItem(item, shouldCenter) {
-    const index = this.state.sortedSource.indexOf(item);
+  /* This could be a simple matter of calling `node.focus()`, but the list's
+     behavior can be weird for some browsers, depending on whether the focused
+     item is outside the scroll view or at least partially visible. */
+  scrollToItem(item, shouldCenter) {
+    const { sortedSource } = this.state;
+    const index = sortedSource.indexOf(item);
     const node = this.listNode.querySelectorAll('[data-menuitem]')[index];
-
-    /* this could be a simple matter of calling `node.focus()`, but the list's
-       behavior can be weird for some browsers, depending on whether the focused
-       item is outside the scroll view or at least partially visible */
-    if (node) this.scrollToNode(node, shouldCenter);
-  }
-
-  scrollToNode(node, shouldCenter) {
-    const dropdown = {
+    const dropdownRect = {
       height: this.listNode.clientHeight,
       scroll: this.listNode.scrollTop,
       visibleTop: this.listNode.clientHeight + this.listNode.scrollTop,
     };
-    const item = {
+    const itemRect = {
       bottom: node.offsetTop + node.clientHeight,
       height: node.clientHeight,
       top: node.offsetTop,
     };
 
     if (shouldCenter) {
-      this.listNode.scrollTop = item.top
-        - (dropdown.height / 2)
-        + (item.height / 2);
+      this.listNode.scrollTop = itemRect.top
+        - (dropdownRect.height / 2)
+        + (itemRect.height / 2);
     } else {
-      if (item.bottom > dropdown.visibleTop) {
-        this.listNode.scrollTop = item.bottom - dropdown.height;
+      if (itemRect.bottom > dropdownRect.visibleTop) {
+        this.listNode.scrollTop = itemRect.bottom - dropdownRect.height;
       }
-      if (item.top < dropdown.scroll) {
-        this.listNode.scrollTop = item.bottom >= dropdown.scroll
-          ? item.top
-          : item.bottom - dropdown.height;
+      if (itemRect.top < dropdownRect.scroll) {
+        this.listNode.scrollTop = item.equals(sortedSource.first())
+          ? itemRect.bottom - dropdownRect.height
+          : itemRect.top;
       }
     }
   }
