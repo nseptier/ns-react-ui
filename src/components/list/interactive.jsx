@@ -118,7 +118,8 @@ export default class InteractiveList extends Component {
       this.scrollToItem(item);
     }
 
-    if (!this.state.hoveredItem.equals(prevState.hoveredItem)) {
+    if (this.state.hoveredItem
+      && !this.state.hoveredItem.equals(prevState.hoveredItem)) {
       this.debounceHoveredItem = null;
       onItemHover(this.state.hoveredItem);
     }
@@ -209,6 +210,9 @@ export default class InteractiveList extends Component {
     const { sortedSource } = this.state;
     const index = sortedSource.indexOf(item);
     const node = this.listNode.querySelectorAll('[data-menuitem]')[index];
+
+    if (!node) return;
+
     const dropdownRect = {
       height: this.listNode.clientHeight,
       scroll: this.listNode.scrollTop,
