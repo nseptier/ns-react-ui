@@ -8,12 +8,14 @@ export default DecoratedComponent => class DropdownProxy extends Component {
     align: 'top left',
     anchor: 'bottom left',
     isExpanded: null,
+    isFloating: false,
   }
 
   static propTypes = {
     align: string,
     anchor: string,
     isExpanded: bool,
+    isFloating: bool,
     triggerId: string.isRequired,
   }
 
@@ -26,32 +28,32 @@ export default DecoratedComponent => class DropdownProxy extends Component {
 
   componentDidMount() {
     this.triggerNode = document.getElementById(this.props.triggerId);
-    if (this.props.isExpanded) this.setPosition();
+    if (this.props.isExpanded) this.positionDropdown();
+    document.addEventListener('scroll', this.onScroll);
   }
 
   componentDidUpdate(prevProps) {
-    /* a second render is necessary once the DOM has been updated to be able to
-       use the nodes' dimensions and position */
-    if (!prevProps.isExpanded && this.props.isExpanded) this.setPosition();
+    if (!prevProps.isExpanded && this.props.isExpanded) this.positionDropdown();
   }
 
-  // getters -------------------------------------------------------------------
+  componentWillUnmount() {
+    document.removeEventListener('scroll', this.onScroll);
+  }
 
-  setPosition() {
-    const { align, anchor } = this.props;
+  // utils ---------------------------------------------------------------------
+
+  positionDropdown() {
+    const { align, anchor, isFloating } = this.props;
     const [yAlign, xAlign] = align.split(' ');
     const [yAnchor, xAnchor] = anchor.split(' ');
+    const parentNode = (isFloating
+      ? document.body
+      : this.triggerNode.parentNode).getBoundingClientRect();
     const trigger = this.triggerNode.getBoundingClientRect();
-    const viewport = {
-      bottom: document.documentElement.clientHeight,
-      left: 0,
-      right: document.documentElement.clientWidth,
-      top: 0,
-    };
 
     this.setState({
-      [xAlign]: `${Math.abs(viewport[xAlign] - trigger[xAnchor])}px`,
-      [yAlign]: `${Math.abs(viewport[yAlign] - trigger[yAnchor])}px`,
+      [xAlign]: `${Math.abs(parentNode[xAlign] - trigger[xAnchor])}px`,
+      [yAlign]: `${Math.abs(parentNode[yAlign] - trigger[yAnchor])}px`,
     });
   }
 
@@ -61,7 +63,8 @@ export default DecoratedComponent => class DropdownProxy extends Component {
     const { style, ...props } = this.props;
     const { bottom, left, right, top } = this.state;
 
-    return (bottom === null && top === null) || (left === null && right === null)
+    return (bottom === null && top === null)
+      || (left === null && right === null)
       ? null
       : (
         <DecoratedComponent

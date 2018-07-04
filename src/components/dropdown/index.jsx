@@ -18,14 +18,14 @@ const selectors = `${FIELDS}, ${LINKS}, [tabindex]`;
 const findFocusableNodes = (parentNode = document) =>
   [...parentNode.querySelectorAll(selectors)]
     .filter((node) => {
-      /* eslint-disable no-restricted-globals */
       const nodeName = node.nodeName.toLowerCase();
       const tabIndex = parseInt(node.getAttribute('tabIndex'), 10);
-      const hasTabIndex = !isNaN(tabIndex) && (tabIndex >= 0);
+      const hasTabIndex = !Number.isNaN(tabIndex) && (tabIndex >= 0);
       let isFocusable;
 
       if (FIELDS.includes(nodeName)) {
-        isFocusable = !node.disabled && (isNaN(tabIndex) || tabIndex >= 0);
+        isFocusable = !node.disabled
+          && (Number.isNaN(tabIndex) || tabIndex >= 0);
       } else if (LINKS.includes(nodeName)) {
         isFocusable = !!node.href || hasTabIndex;
       } else {
@@ -39,7 +39,6 @@ const findFocusableNodes = (parentNode = document) =>
         n = n.parentNode;
       }
       return isFocusable && isVisible;
-      /* eslint-enable */
     });
 
 @Proxy
@@ -48,10 +47,12 @@ export default class Dropdown extends Component {
 
   static defaultProps = {
     isExpanded: null,
+    isFloating: false,
   }
 
   static propTypes = {
     isExpanded: bool,
+    isFloating: bool,
     onClose: func.isRequired,
     triggerId: string.isRequired,
   }
@@ -154,31 +155,34 @@ export default class Dropdown extends Component {
 
   // rendering -----------------------------------------------------------------
 
-  renderPortal() {
+  renderDropdown() {
     const { children, className, isExpanded, style } = this.props;
 
     return (
+      /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
       <div
         aria-hidden={!isExpanded}
         className={classNames('ns-dropdown', className)}
         onBlur={this.onFocusOut}
         onKeyDown={this.onKeyDown}
         ref={(node) => { this.dropdownNode = node; }}
-        role="menu"
+        role="dialog"
         style={style}
         tabIndex="-1"
       >
         {children}
       </div>
+      /* eslint-enable jsx-a11y/no-noninteractive-element-interactions */
     );
   }
 
   render() {
-    return this.state.isExpanded
-      ? ReactDOM.createPortal(
-        this.renderPortal(),
-        document.body,
-      )
-      : null;
+    const { isFloating, triggerId } = this.props;
+
+    if (!this.state.isExpanded) return null;
+    return ReactDOM.createPortal(
+      this.renderDropdown(),
+      isFloating ? document.body : document.getElementById(triggerId).parentNode,
+    );
   }
 }
