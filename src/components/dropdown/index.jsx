@@ -109,7 +109,8 @@ export default class Dropdown extends Component {
       || document.activeElement === event.target
       || event.relatedTarget === this.triggerNode
       || !this.dropdownNode
-      || this.dropdownNode.contains(event.relatedTarget)) {
+      || (this.dropdownNode
+        && this.dropdownNode.contains(event.relatedTarget))) {
       return;
     }
     onClose();
