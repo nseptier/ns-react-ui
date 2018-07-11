@@ -29,7 +29,7 @@ export default class InteractiveList extends Component {
   // static --------------------------------------------------------------------
 
   static defaultProps = {
-    activeItems: null,
+    activeItems: Immutable.List(),
     focusTarget: null,
     groupBy: undefined,
     groupHeaderRenderer: undefined,
