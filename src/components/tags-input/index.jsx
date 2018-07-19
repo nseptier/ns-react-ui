@@ -209,11 +209,14 @@ export default class TagsInput extends Component {
   }
 
   render() {
+    const { className, style } = this.props;
+
     return (
       <Fragment>
         <div
-          className={classNames('tags-input', this.props.className)}
+          className={classNames('tags-input', className)}
           id={this.props.id}
+          style={style}
         >
           {this.renderTags()}
           {this.renderSearchInput()}

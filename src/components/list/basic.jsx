@@ -44,7 +44,7 @@ const list = ({
 
 list.defaultProps = {
   groupBy: null,
-  groupHeaderRenderer: groupName => groupName,
+  groupHeaderRenderer: null,
   itemIdentifier: () => null,
   sortBy: null,
 };
