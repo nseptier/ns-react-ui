@@ -2,7 +2,7 @@ import autobind from 'autobind-decorator';
 import classNames from 'utils/classnames';
 import modulo from 'utils/modulo';
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
+import { createPortal } from 'react-dom';
 import { bool, func, string } from 'prop-types';
 import Proxy from './proxy';
 import './styles.scss';
@@ -181,9 +181,11 @@ export default class Dropdown extends Component {
     const { isFloating, triggerId } = this.props;
 
     if (!this.state.isExpanded) return null;
-    return ReactDOM.createPortal(
+    return createPortal(
       this.renderDropdown(),
-      isFloating ? document.body : document.getElementById(triggerId).parentNode,
+      isFloating
+        ? document.body
+        : document.getElementById(triggerId).parentNode,
     );
   }
 }

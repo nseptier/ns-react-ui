@@ -5,7 +5,7 @@ import Icon from 'components/icon';
 import Immutable from 'immutable';
 import List from 'components/list';
 import React, { Component, Fragment } from 'react';
-import PropTypes from 'prop-types';
+import { bool, func, instanceOf, string } from 'prop-types';
 
 export default class TagsInput extends Component {
   // static --------------------------------------------------------------------
@@ -14,22 +14,24 @@ export default class TagsInput extends Component {
     disabled: false,
     isExpanded: false,
     optionDisabler: () => null,
+    placeholder: null,
     value: Immutable.OrderedSet(),
   }
 
   static propTypes = {
-    disabled: PropTypes.bool,
-    id: PropTypes.string.isRequired,
-    isExpanded: PropTypes.bool,
-    onChange: PropTypes.func.isRequired,
-    onOptionSelection: PropTypes.func.isRequired,
-    onTagAdding: PropTypes.func.isRequired,
-    onTagRemoval: PropTypes.func.isRequired,
-    optionDisabler: PropTypes.func,
-    optionRenderer: PropTypes.func.isRequired,
-    options: PropTypes.instanceOf(Immutable.OrderedSet).isRequired,
-    tagRenderer: PropTypes.func.isRequired,
-    value: PropTypes.instanceOf(Immutable.Set),
+    disabled: bool,
+    id: string.isRequired,
+    isExpanded: bool,
+    onChange: func.isRequired,
+    onOptionSelection: func.isRequired,
+    onTagAdding: func.isRequired,
+    onTagRemoval: func.isRequired,
+    optionDisabler: func,
+    optionRenderer: func.isRequired,
+    options: instanceOf(Immutable.OrderedSet).isRequired,
+    placeholder: string,
+    tagRenderer: func.isRequired,
+    value: instanceOf(Immutable.Set),
   }
 
   // lifecycle -----------------------------------------------------------------
@@ -46,8 +48,8 @@ export default class TagsInput extends Component {
   // callbacks -----------------------------------------------------------------
 
   @autobind
-  onTagAdding(string) {
-    if (this.props.onTagAdding(string)) {
+  onTagAdding(text) {
+    if (this.props.onTagAdding(text)) {
       this.setState({ inputValue: '', isExpanded: false });
     }
   }
@@ -62,8 +64,8 @@ export default class TagsInput extends Component {
   }
 
   @autobind
-  onTagRemoval(string) {
-    this.props.onTagRemoval(string);
+  onTagRemoval(text) {
+    this.props.onTagRemoval(text);
   }
 
   @autobind
@@ -144,7 +146,7 @@ export default class TagsInput extends Component {
   }
 
   renderSearchInput() {
-    const { disabled, id } = this.props;
+    const { disabled, id, placeholder } = this.props;
     const { hoveredOption, inputValue, isExpanded } = this.state;
 
     return (
@@ -182,6 +184,7 @@ export default class TagsInput extends Component {
             );
           }}
           onKeyDown={this.onKeyDown}
+          placeholder={placeholder}
           role="searchbox"
           value={inputValue}
         />
@@ -192,13 +195,13 @@ export default class TagsInput extends Component {
   renderTags() {
     const { disabled, tagRenderer, value } = this.props;
 
-    return value.map(string => (
-      <div className="tag tags-input__tag" key={string}>
-        {tagRenderer(string)}
+    return value.map(text => (
+      <div className="tag tags-input__tag" key={text}>
+        {tagRenderer(text)}
         {!disabled &&
           <button
             className="tag__icon"
-            onClick={() => this.onTagRemoval(string)}
+            onClick={() => this.onTagRemoval(text)}
             tabIndex="-1"
           >
             <Icon name="close" />
