@@ -130,7 +130,7 @@ export default class TagsInput extends Component {
       >
         <List
           focusTarget={`${id}AutocompleteInput`}
-          id={`${id}AutocompleteLisbox`}
+          id={`${id}AutocompleteListbox`}
           isInteractive
           itemRenderer={option => this.renderOption(option)}
           itemDisabler={optionDisabler}
@@ -160,7 +160,7 @@ export default class TagsInput extends Component {
         <span
           aria-expanded={isExpanded}
           aria-haspopup
-          aria-owns={`${id}AutocompleteLisbox`}
+          aria-owns={`${id}AutocompleteListbox`}
           role="combobox"
         />
         {/* eslint-enable */}
@@ -170,7 +170,7 @@ export default class TagsInput extends Component {
             : null
           }
           aria-autocomplete="list"
-          aria-controls={`${id}AutocompleteLisbox`}
+          aria-controls={`${id}AutocompleteListbox`}
           autoComplete="off"
           className="tags-input__search"
           disabled={disabled}

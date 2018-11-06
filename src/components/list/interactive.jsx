@@ -158,7 +158,7 @@ export default class InteractiveList extends Component {
 
   @autobind
   onKeyDown(event) {
-    const [NEXT, PREVIOUS] = [1, -1];
+    const [DOWN, UP] = [1, -1];
 
     if (this.props.selectionKeys.includes(event.keyCode)) {
       event.preventDefault();
@@ -168,12 +168,12 @@ export default class InteractiveList extends Component {
     switch (event.keyCode) {
       case 38: // up arrow
         event.preventDefault();
-        this.focusAdjacentItem(PREVIOUS);
+        this.focusNextItem(UP);
         break;
 
       case 40: // down arrow
         event.preventDefault();
-        this.focusAdjacentItem(NEXT);
+        this.focusNextItem(DOWN);
         break;
 
       default:
@@ -190,17 +190,23 @@ export default class InteractiveList extends Component {
     1,
   )
 
-  focusAdjacentItem(direction) {
-    const { sortedSource } = this.state;
-    const adjacentIndex = modulo(
-      sortedSource.indexOf(this.debounceHoveredItem || this.state.hoveredItem)
-        + direction,
-      sortedSource.size,
-    );
-    const hoveredItem = sortedSource.get(adjacentIndex);
+  focusNextItem(direction) {
+    const { itemDisabler } = this.props;
+    const { hoveredItem, sortedSource } = this.state;
+    let nextIndex;
+    let nextItem = hoveredItem;
 
-    this.debounceHoveredItem = hoveredItem;
-    this.debounceItemHover(hoveredItem);
+    do {
+      nextIndex = modulo(
+        sortedSource.indexOf(this.debounceHoveredItem || nextItem)
+          + direction,
+        sortedSource.size,
+      );
+      nextItem = sortedSource.get(nextIndex);
+    } while (itemDisabler(nextItem));
+
+    this.debounceHoveredItem = nextItem;
+    this.debounceItemHover(nextItem);
   }
 
   /* This could be a simple matter of calling `node.focus()`, but the list's
