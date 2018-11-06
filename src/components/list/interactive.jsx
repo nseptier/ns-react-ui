@@ -269,7 +269,9 @@ export default class InteractiveList extends Component {
         'data-menuitem': true,
         disabled: isDisabled,
         onClick: event => (isDisabled || onItemSelection(item, event)),
-        onMouseEnter: () => this.setState({ hoveredItem: item }),
+        onMouseEnter: () => (isDisabled
+          || this.setState({ hoveredItem: item })
+        ),
         tabIndex: -1,
       },
     );

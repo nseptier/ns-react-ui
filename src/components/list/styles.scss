@@ -14,6 +14,10 @@
   &[data-hover=true] {
     background: $grey-200;
   }
+
+  &[disabled] {
+    cursor: initial;
+  }
 }
 
 .ns-list__items {
