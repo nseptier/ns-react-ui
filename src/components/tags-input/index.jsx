@@ -4,8 +4,9 @@ import Dropdown from 'components/dropdown';
 import Icon from 'components/icon';
 import Immutable from 'immutable';
 import List from 'components/list';
-import React, { Component, Fragment } from 'react';
+import React, { cloneElement, Component, Fragment } from 'react';
 import { bool, func, instanceOf, string } from 'prop-types';
+import './styles.scss';
 
 export default class TagsInput extends Component {
   // static --------------------------------------------------------------------
@@ -39,6 +40,7 @@ export default class TagsInput extends Component {
   constructor(props, context) {
     super(props, context);
     this.state = {
+      hasFocus: false,
       hoveredOption: null,
       inputValue: '',
       isExpanded: props.isExpanded,
@@ -48,10 +50,8 @@ export default class TagsInput extends Component {
   // callbacks -----------------------------------------------------------------
 
   @autobind
-  onTagAdding(text) {
-    if (this.props.onTagAdding(text)) {
-      this.setState({ inputValue: '', isExpanded: false });
-    }
+  onBlur() {
+    this.setState({ hasFocus: false });
   }
 
   @autobind
@@ -64,8 +64,18 @@ export default class TagsInput extends Component {
   }
 
   @autobind
-  onTagRemoval(text) {
-    this.props.onTagRemoval(text);
+  onClick() {
+    this.inputNode.focus();
+  }
+
+  @autobind
+  onFocus(event) {
+    event.persist();
+    this.setState({ hasFocus: true });
+    setTimeout(
+      () => event.target.value && this.setState({ isExpanded: true }),
+      0,
+    );
   }
 
   @autobind
@@ -102,19 +112,31 @@ export default class TagsInput extends Component {
     this.props.onOptionSelection(option);
   }
 
+  @autobind
+  onTagAdding(text) {
+    if (this.props.onTagAdding(text)) {
+      this.setState({ inputValue: '', isExpanded: false });
+    }
+  }
+
+  @autobind
+  onTagRemoval(text) {
+    this.props.onTagRemoval(text);
+  }
+
   // rendering -----------------------------------------------------------------
 
   renderOption(option) {
     const { hoveredOption, inputValue } = this.state;
+    const renderedOption = this.props.optionRenderer(option, inputValue);
 
-    return (
-      <div
-        aria-selected={option.equals(hoveredOption)}
-        id={option.get('id')}
-        role="option"
-      >
-        {this.props.optionRenderer(option, inputValue)}
-      </div>
+    return cloneElement(
+      renderedOption,
+      {
+        'aria-selected': option.equals(hoveredOption),
+        id: option.get('id'),
+        role: 'option',
+      },
     );
   }
 
@@ -151,43 +173,41 @@ export default class TagsInput extends Component {
 
     return (
       <Fragment>
-        {/* In a combobox implementing the ARIA 1.1 pattern:
-              • When the combobox popup is visible, the textbox element has
-                aria-controls set to a value that refers to the combobox popup
-                element.
-            (https://www.w3.org/TR/wai-aria-1.1/#combobox) */}
-        {/* eslint-disable jsx-a11y/role-has-required-aria-props */}
         <span
           aria-expanded={isExpanded}
           aria-haspopup
           aria-owns={`${id}AutocompleteListbox`}
+          /* In a combobox implementing the ARIA 1.1 pattern:
+                • When the combobox popup is visible, the textbox element has
+                  aria-controls set to a value that refers to the combobox popup
+                  element.
+              (https://www.w3.org/TR/wai-aria-1.1/#combobox) */
+          // eslint-disable-next-line jsx-a11y/role-has-required-aria-props
           role="combobox"
         />
-        {/* eslint-enable */}
-        <input
-          aria-activedescendant={(isExpanded && hoveredOption)
-            ? hoveredOption.get('id')
-            : null
-          }
-          aria-autocomplete="list"
-          aria-controls={`${id}AutocompleteListbox`}
-          autoComplete="off"
-          className="tags-input__search"
-          disabled={disabled}
-          id={`${id}AutocompleteInput`}
-          onChange={this.onChange}
-          onFocus={(event) => {
-            event.persist();
-            setTimeout(
-              () => event.target.value && this.setState({ isExpanded: true }),
-              0,
-            );
-          }}
-          onKeyDown={this.onKeyDown}
-          placeholder={placeholder}
-          role="searchbox"
-          value={inputValue}
-        />
+        <div className="tags-input__input">
+          <span>{inputValue}</span>
+          <input
+            aria-activedescendant={(isExpanded && hoveredOption)
+              ? hoveredOption.get('id')
+              : null
+            }
+            aria-autocomplete="list"
+            aria-controls={`${id}AutocompleteListbox`}
+            autoComplete="off"
+            className="tags-input__caret"
+            disabled={disabled}
+            id={`${id}AutocompleteInput`}
+            onBlur={this.onBlur}
+            onChange={this.onChange}
+            onFocus={this.onFocus}
+            onKeyDown={this.onKeyDown}
+            placeholder={placeholder}
+            ref={(node) => { if (node) this.inputNode = node; }}
+            role="searchbox"
+            value={inputValue}
+          />
+        </div>
       </Fragment>
     );
   }
@@ -215,17 +235,24 @@ export default class TagsInput extends Component {
     const { className, style } = this.props;
 
     return (
-      <Fragment>
-        <div
-          className={classNames('tags-input', className)}
-          id={this.props.id}
-          style={style}
-        >
+      /* Since the actua; input is only 1px long, we need to let users clicking
+         on the wrapper to focus the component. Users navigation with keyboard
+         won't face any issue. */
+      // eslint-disable-next-line
+      <div
+        className={classNames('tags-input', className)}
+        data-active={this.state.hasFocus}
+        id={this.props.id}
+        onClick={this.onClick}
+        role="textbox"
+        style={style}
+      >
+        <div className="tags-input__inner-wrap">
           {this.renderTags()}
           {this.renderSearchInput()}
-          {this.renderOptionsDropdown()}
         </div>
-      </Fragment>
+        {this.renderOptionsDropdown()}
+      </div>
     );
   }
 }

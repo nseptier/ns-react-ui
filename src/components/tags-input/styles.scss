@@ -1,0 +1,24 @@
+.tags-input__caret {
+  border: 0;
+  width: 1px;
+  margin: 0;
+  padding: 0;
+}
+
+.tags-input__inner-wrap {
+  align-items: center;
+  cursor: text;
+  display: flex;
+  flex: auto;
+  flex-wrap: wrap;
+  margin: -2px -4px;
+}
+
+.tags-input__input {
+  margin: 2px 4px;
+}
+
+.tags-input__tag {
+  line-height: 1;
+  margin: 2px 4px;
+}
