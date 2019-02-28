@@ -59,7 +59,10 @@ export default class TagsInput extends Component {
 
   @autobind
   onBlur() {
+    const { inputValue } = this.state;
+
     this.setState({ hasFocus: false });
+    this.onTagAdding(inputValue);
   }
 
   @autobind
