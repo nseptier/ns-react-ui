@@ -69,7 +69,7 @@ export default DecoratedComponent => class DropdownProxy extends Component {
       : (
         <DecoratedComponent
           {...props}
-          style={{ ...style, bottom, left, right, top }}
+          style={{ bottom, left, right, top, ...style }}
         />
       );
   }

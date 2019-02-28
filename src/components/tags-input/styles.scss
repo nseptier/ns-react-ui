@@ -1,8 +1,10 @@
-.tags-input__caret {
-  border: 0;
-  width: 1px;
-  margin: 0;
-  padding: 0;
+.tags-input {
+  position: relative;
+}
+
+.tags-input__dropdown {
+  left: 0;
+  top: 100%;
 }
 
 .tags-input__inner-wrap {
@@ -15,7 +17,17 @@
 }
 
 .tags-input__input {
+  border: 0;
+  font: inherit;
   margin: 2px 4px;
+  padding: 0;
+  width: 1rem;
+}
+
+.tags-input__input--fake {
+  position: fixed;
+  top: -9999px;
+  width: auto;
 }
 
 .tags-input__tag {

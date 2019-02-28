@@ -47,6 +47,14 @@ export default class TagsInput extends Component {
     };
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.inputValue !== prevState.inputValue) {
+      this.inputNode.style.width = this.state.inputValue
+        ? `${this.lenRefNode.getBoundingClientRect().width + 4}px`
+        : '1rem';
+    }
+  }
+
   // callbacks -----------------------------------------------------------------
 
   @autobind
@@ -148,6 +156,7 @@ export default class TagsInput extends Component {
         className="tags-input__dropdown"
         isExpanded={this.state.isExpanded && !!options.size}
         onClose={() => this.setState({ isExpanded: false })}
+        style={{ left: 0, top: '100%' }}
         triggerId={`${id}AutocompleteInput`}
       >
         <List
@@ -185,29 +194,32 @@ export default class TagsInput extends Component {
           // eslint-disable-next-line jsx-a11y/role-has-required-aria-props
           role="combobox"
         />
-        <div className="tags-input__input">
-          <span>{inputValue}</span>
-          <input
-            aria-activedescendant={(isExpanded && hoveredOption)
-              ? hoveredOption.get('id')
-              : null
-            }
-            aria-autocomplete="list"
-            aria-controls={`${id}AutocompleteListbox`}
-            autoComplete="off"
-            className="tags-input__caret"
-            disabled={disabled}
-            id={`${id}AutocompleteInput`}
-            onBlur={this.onBlur}
-            onChange={this.onChange}
-            onFocus={this.onFocus}
-            onKeyDown={this.onKeyDown}
-            placeholder={placeholder}
-            ref={(node) => { if (node) this.inputNode = node; }}
-            role="searchbox"
-            value={inputValue}
-          />
+        <div
+          className="tags-input__input tags-input__input--fake"
+          ref={(node) => { if (node) this.lenRefNode = node; }}
+        >
+          {inputValue}
         </div>
+        <input
+          aria-activedescendant={(isExpanded && hoveredOption)
+            ? hoveredOption.get('id')
+            : null
+          }
+          aria-autocomplete="list"
+          aria-controls={`${id}AutocompleteListbox`}
+          autoComplete="off"
+          className="tags-input__input"
+          disabled={disabled}
+          id={`${id}AutocompleteInput`}
+          onBlur={this.onBlur}
+          onChange={this.onChange}
+          onFocus={this.onFocus}
+          onKeyDown={this.onKeyDown}
+          placeholder={placeholder}
+          ref={(node) => { if (node) this.inputNode = node; }}
+          role="searchbox"
+          value={inputValue}
+        />
       </Fragment>
     );
   }
