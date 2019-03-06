@@ -47,11 +47,17 @@ export default class TagsInput extends Component {
     };
   }
 
+  componentDidMount() {
+    const width = this.lenRefNode.getBoundingClientRect().width + 4;
+
+    this.inputNode.style.width = `${width}px`;
+  }
+
   componentDidUpdate(prevProps, prevState) {
+    const width = this.lenRefNode.getBoundingClientRect().width + 4;
+
     if (this.state.inputValue !== prevState.inputValue) {
-      this.inputNode.style.width = this.state.inputValue
-        ? `${this.lenRefNode.getBoundingClientRect().width + 4}px`
-        : '1rem';
+      this.inputNode.style.width = `${width}px`;
     }
   }
 
@@ -201,7 +207,7 @@ export default class TagsInput extends Component {
           className="tags-input__input tags-input__input--fake"
           ref={(node) => { if (node) this.lenRefNode = node; }}
         >
-          {inputValue}
+          {inputValue || placeholder}
         </div>
         <input
           aria-activedescendant={(isExpanded && hoveredOption)
